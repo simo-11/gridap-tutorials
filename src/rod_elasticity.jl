@@ -1,49 +1,49 @@
-# In this tutorial, we will learn
-#
-#  - How to approximate vector-valued problems
-#  - How to solve problems with complex constitutive laws
-#  - How to impose Dirichlet boundary conditions only in selected components
-#  - How to impose Dirichlet boundary conditions described by more than one function
+# In this tutorial, we will learn how to simulate single [truss](https://en.wikipedia.org/wiki/Truss) using Gridap
 #
 # ## Problem statement
 #
-# In this tutorial, we detail how to solve a linear elasticity problem defined on the 3D domain depicted in next figure.
+# In this tutorial, we detail how to solve a linear truss having square cross section of
+# 0.001 m and length of 0.2 m depicted in next figure.
 #
-# ![](../assets/elasticity/solid.png)
+# ![](../assets/elasticity/truss.png)
 #
-# We impose the following boundary conditions. All components of the displacement vector  are constrained to zero on the surface $\Gamma_{\rm G}$, which is marked in green in the figure. On the other hand, the first component of the displacement vector is prescribed to the value $\delta\doteq 5$mm on the surface $\Gamma_{\rm B}$, which is marked in blue. No body or surface forces are included in this example. Formally, the PDE to solve is
+# In first phase we impose the following boundary conditions. 
+# Displacement is constrained to zero on the left end and pulling load of 100 N is applied at right end.
+# Formally, the PDE to solve is
 #
 # ```math
 # \left\lbrace
 # \begin{aligned}
 # -∇\cdot\sigma(u) = 0 \ &\text{in} \ \Omega,\\
-# u = 0 \ &\text{on}\ \Gamma_{\rm G},\\
-# u_1 = \delta \ &\text{on}\ \Gamma_{\rm B},\\
-# \sigma(u)\cdot n = 0 \ &\text{on}\  \Gamma_{\rm N}.\\
+# u = 0 \ &\text{on}\ x = 0,\\
+# f(0.2) = 100,\\
 # \end{aligned}
 # \right.
 # ```
 #
-# The variable $u$ stands for the unknown displacement vector, the vector $n$ is the unit outward normal to the Neumann boundary $\Gamma_{\rm N}\doteq\partial\Omega\setminus\left(\Gamma_{\rm B}\cup\Gamma_{\rm G}\right)$ and $\sigma(u)$ is the stress tensor defined as
+# The variable $u$ stands for the unknown displacement vector $\sigma(u)$ is the stress tensor defined as
 # ```math
-# \sigma(u) \doteq \lambda\ {\rm tr}(\varepsilon(u)) \ I +2 \mu \  \varepsilon(u),
+# \sigma(u) = f / A,
 # ```
-# where $I$ is the 2nd order identity tensor, and $\lambda$ and $\mu$ are the *Lamé parameters* of the material. The operator $\varepsilon(u)\doteq\frac{1}{2}\left(\nabla u + (\nabla u)^t \right)$ is the symmetric gradient operator (i.e., the strain tensor). Here, we consider material parameters corresponding to aluminum with Young's modulus $E=70\cdot 10^9$ Pa and Poisson's ratio $\nu=0.33$. From these values, the Lamé parameters are obtained as $\lambda = (E\nu)/((1+\nu)(1-2\nu))$ and $\mu=E/(2(1+\nu))$.
-#
+# Here, we consider material parameters corresponding to stell with Young's modulus $E=210\cdot 10^9$ Pa.
+# For 1D solution Poisson's ratio is not taken into account.
 #
 # ## Numerical scheme
 #
-# As in previous tutorial, we use a conventional Galerkin FE method with conforming Lagrangian FE spaces. For this formulation, the weak form is: find $u\in U$ such that $ a(u,v) = 0 $ for all $v\in V_0$, where $U$ is the subset of functions in $V\doteq[H^1(\Omega)]^3$ that fulfill the Dirichlet boundary conditions of the problem, whereas $V_0$ are functions in $V$ fulfilling $v=0$ on $\Gamma_{\rm G}$ and $v_1=0$ on $\Gamma_{\rm B}$. The bilinear form of the problem is
+# As in previous tutorial, we use a conventional Galerkin FE method with conforming Lagrangian FE spaces. 
+# For this formulation, the weak form is: 
+# find $u\in U$ such that $ a(u,v) = 0 $ for all $v\in V_0$, where $U$ is the 
+# subset of functions in $V\doteq[H^1(\Omega)]^3$ that fulfill the Dirichlet boundary conditions of the problem, 
+# whereas $V_0$ are functions in $V$ fulfilling $v=0$ on $\Gamma_{\rm G}$ and $v_1=0$ on $\Gamma_{\rm B}$. 
+# The bilinear form of the problem is
 # ```math
 # a(u,v)\doteq \int_{\Omega} \varepsilon(v) : \sigma(u) \ {\rm d}\Omega.
 # ```
 #
-# The main differences with respect to previous tutorial is that we need to deal with a vector-valued problem, we need to impose different prescribed values on the Dirichlet boundary, and the integrand of the bilinear form $a(\cdot,\cdot)$ is more complex as it involves the symmetric gradient operator and the stress tensor. However, the implementation of this numerical scheme is still done in a user-friendly way since all these features can be easily accounted for with the abstractions in the library.
 #
 # ## Discrete model
 #
 # We start by loading the discrete model from a file
-
 using Gridap
 model = DiscreteModelFromFile("../models/solid.json")
 
