@@ -3,9 +3,8 @@
 # ## Problem statement
 #
 # In this tutorial, we detail how to solve a linear truss having square cross section of
-# 0.001 m and length of 0.2 m depicted in next figure.
+# 0.001x0.001 m and length of 0.2 m.
 #
-# ![](../assets/elasticity/truss.png)
 #
 # In first phase we impose the following boundary conditions. 
 # Displacement is constrained to zero on the left end and pulling load of 100 N is applied at right end.
