@@ -8,6 +8,7 @@ files = [
   "Poisson equation"=>"poisson.jl",
   "Code validation"=>"validation.jl",
   "Linear elasticity"=>"elasticity.jl",
+  "Truss elasticity"=>"truss_elasticity.jl",
   "p-Laplacian"=>"p_laplacian.jl",
   "Hyper-elasticity"=>"hyperelasticity.jl",
   "Poisson equation (with DG)"=> "dg_discretization.jl",
