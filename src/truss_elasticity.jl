@@ -3,59 +3,43 @@
 # ## Problem statement
 #
 # In this tutorial, we detail how to solve a linear truss having square cross section of
-# 0.001x0.001 m and length of 0.2 m.
+# 0.001x0.001 m (A=1e-6 $m^2$) and length of 0.2 m.
 #
 #
-# In first phase we impose the following boundary conditions. 
+# In first phase we use [one-dimensional approximation based on Hooke's law](https://en.wikipedia.org/wiki/Hooke%27s_law)
+# We impose the following boundary conditions. 
 # Displacement is constrained to zero on the left end and pulling load of 100 N is applied at right end.
+# 
 # Formally, the PDE to solve is
 #
 # ```math
-# \left\lbrace
 # \begin{aligned}
-# -∇\cdot\sigma(u) = 0 \ &\text{in} \ \Omega,\\
+# \epsilon = \frac{F}{A E}
 # u = 0 \ &\text{on}\ x = 0,\\
 # f(0.2) = 100,\\
 # \end{aligned}
-# \right.
 # ```
 #
 # The variable $u$ stands for the unknown displacement vector $\sigma(u)$ is the stress tensor defined as
 # ```math
 # \sigma(u) = f / A,
 # ```
-# Here, we consider material parameters corresponding to stell with Young's modulus $E=210\cdot 10^9$ Pa.
+# Here, we consider material parameters corresponding to steel with Young's modulus $E=210\cdot 10^9$ Pa.
 # For 1D solution Poisson's ratio is not taken into account.
 #
 # ## Numerical scheme
 #
-# As in previous tutorial, we use a conventional Galerkin FE method with conforming Lagrangian FE spaces. 
-# For this formulation, the weak form is: 
-# find $u\in U$ such that $ a(u,v) = 0 $ for all $v\in V_0$, where $U$ is the 
-# subset of functions in $V\doteq[H^1(\Omega)]^3$ that fulfill the Dirichlet boundary conditions of the problem, 
-# whereas $V_0$ are functions in $V$ fulfilling $v=0$ on $\Gamma_{\rm G}$ and $v_1=0$ on $\Gamma_{\rm B}$. 
-# The bilinear form of the problem is
-# ```math
-# a(u,v)\doteq \int_{\Omega} \varepsilon(v) : \sigma(u) \ {\rm d}\Omega.
-# ```
-#
 #
 # ## Discrete model
 #
-# We start by loading the discrete model from a file
+# We start by defining model
 using Gridap
-model = DiscreteModelFromFile("../models/solid.json")
 
 # In order to inspect it, write the model to vtk
 
 writevtk(model,"model")
 
-# and open the resulting files with Paraview. The boundaries $\Gamma_{\rm B}$ and $\Gamma_{\rm G}$ are identified  with the names `"surface_1"` and `"surface_2"` respectively.  For instance, if you visualize the faces of the model and color them by the field `"surface_2"` (see next figure), you will see that only the faces on $\Gamma_{\rm G}$ have a value different from zero.
-#
-# ![](../assets/elasticity/solid-surf2.png)
-#
-# ## Vector-valued FE space
-#
+# and open the resulting files with Paraview. 
 # The next step is the construction of the FE space. Here, we need to build a vector-valued FE space, which is done as follows:
 
 order = 1
@@ -66,9 +50,16 @@ V0 = TestFESpace(model,reffe;
   dirichlet_tags=["surface_1","surface_2"],
   dirichlet_masks=[(true,false,false), (true,true,true)])
 
-# As in previous tutorial, we construct a continuous Lagrangian interpolation of order 1. The vector-valued interpolation is selected via the option `valuetype=VectorValue{3,Float64}`, where we use the type `VectorValue{3,Float64}`, which is the way Gridap represents vectors of three `Float64` components. We mark as Dirichlet the objects identified with the tags `"surface_1"` and `"surface_2"` using the `dirichlet_tags` argument. Finally, we chose which components of the displacement are actually constrained on the Dirichlet boundary via the `dirichlet_masks` argument. Note that we constrain only the first component on the boundary $\Gamma_{\rm B}$ (identified as `"surface_1"`), whereas we constrain all components on $\Gamma_{\rm G}$ (identified as `"surface_2"`).
+# As in previous tutorial, we construct a continuous Lagrangian interpolation of order 1. 
+# The vector-valued interpolation is selected via the option `valuetype=VectorValue{1,Float64}`, where we use the type `VectorValue{3,Float64}`, 
+# which is the way Gridap represents vectors of three `Float64` components. 
+# We mark as Dirichlet the objects identified with the tags `"surface_1"` and `"surface_2"` using the `dirichlet_tags` argument. 
+# Finally, we chose which components of the displacement are actually constrained on the Dirichlet boundary via the `dirichlet_masks` argument. 
+# Note that we constrain only the first component on the boundary $\Gamma_{\rm B}$ (identified as `"surface_1"`), 
+# whereas we constrain all components on $\Gamma_{\rm G}$ (identified as `"surface_2"`).
 #
-# The construction of the trial space is slightly different in this case. The Dirichlet boundary conditions are described with two different functions, one for boundary $\Gamma_{\rm B}$ and another one for $\Gamma_{\rm G}$. These functions can be defined as
+# The construction of the trial space is slightly different in this case. 
+# The Dirichlet boundary conditions are described with two different functions, one for boundary $\Gamma_{\rm B}$ and another one for $\Gamma_{\rm G}$. These functions can be defined as
 
 g1(x) = VectorValue(0.005,0.0,0.0)
 g2(x) = VectorValue(0.0,0.0,0.0)
