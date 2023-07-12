@@ -1,6 +1,9 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+GridapMakie = "41f30b06-6382-4b60-a5f7-79d86b35bf5d"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
+P4est = "7d669430-f675-4ae7-b43e-fab78ec5a902"
 Tutorials = "ab87341f-2653-5384-8dc6-691ea82e91b3"
 
 [compat]
